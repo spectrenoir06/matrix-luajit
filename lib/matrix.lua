@@ -1,10 +1,3 @@
-local ffi = require("ffi")
-local socket = require("socket")
-local struct = require("struct")
-
-udp = socket.udp()
-udp:setsockname("*", 1234)
-udp:settimeout(0)
 
 local lib = ffi.load("/home/pi/matrix-luajit/librgbmatrix.so.1")
 
@@ -62,51 +55,26 @@ void draw_circle(struct LedCanvas *c, int xx, int y, int radius, uint8_t r, uint
 void draw_line(struct LedCanvas *c, int x0, int y0, int x1, int y1, uint8_t r, uint8_t g, uint8_t b);
 ]])
 
-function color_wheel(WheelPos)
-	WheelPos = WheelPos % 255
-	WheelPos = 255 - WheelPos
-	if (WheelPos < 85) then
-		return {255 - WheelPos * 3, 0, WheelPos * 3}
-	elseif (WheelPos < 170) then
-		WheelPos = WheelPos - 85
-		return {0, WheelPos * 3, 255 - WheelPos * 3}
-	else
-		WheelPos = WheelPos - 170
-		return {WheelPos * 3, 255 - WheelPos * 3, 0}
-	end
+local matrix = {}
+
+function matrix:init(option)
+	self.options = ffi.new("struct RGBLedMatrixOptions")
+	-- self.matrix  = ffi.new("struct RGBLedMatrix")
+	self.canvas  = ffi.new("struct LedCanvas")
+
+	for k,v in pairs(option) do options[k] = v end
+
+	local self.matrix = ffi.gc(lib.led_matrix_create_from_options(options, nil, nil), lib.led_matrix_delete)
+	self.canvas = lib.led_matrix_create_offscreen_canvas(self.matrix)
+end
+
+function matrix:setPixel(x,y,c)
+	lib.led_canvas_set_pixel(self.canvas, x, y, c[1], c[2], c[3]);
 end
 
 
-local options = ffi.new("struct RGBLedMatrixOptions")
-local matrix = ffi.new("struct RGBLedMatrix")
-local offscreen_canvas = ffi.new("struct LedCanvas")
-
-options.rows = 32
-options.cols = 64
-options.chain_length = 2
-options.hardware_mapping = "adafruit-hat"
-options.pixel_mapper_config = "U-mapper"
-
-local matrix = ffi.gc(lib.led_matrix_create_from_options(options, nil, nil), lib.led_matrix_delete)
-offscreen_canvas = lib.led_matrix_create_offscreen_canvas(matrix)
-
-
---
-while true do
-	data, ip, port = udp:receivefrom()
-
-
-
-	if data then
-		print("Received: ",ip,port)
-		print(data)
-		for x=0,64-1 do
-			for y=0,64-1 do
-				local c = color_wheel(x+y)
-				lib.led_canvas_set_pixel(offscreen_canvas, x, y, c[1], c[2], c[3]);
-			end
-		end
-		offscreen_canvas = lib.led_matrix_swap_on_vsync(matrix, offscreen_canvas);
-	end
-	socket.sleep(0.1)
+function matrix:send()
+	self.canvas = lib.led_matrix_swap_on_vsync(self.matrix, self.canvas);
 end
+
+return matrix

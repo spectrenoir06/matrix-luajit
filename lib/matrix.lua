@@ -72,6 +72,10 @@ function matrix:init(option)
 		self.options[k] = v
 	end
 
+	self.lx = self.options.cols
+	self.ly = self.options.rows
+
+	-- print(self.lx, self.ly)
 	self.matrix = ffi.gc(lib.led_matrix_create_from_options(self.options, nil, nil), lib.led_matrix_delete)
 	self.canvas = lib.led_matrix_create_offscreen_canvas(self.matrix)
 end

@@ -8,7 +8,12 @@ local upack = string.unpack
 
 udp = socket.udp()
 udp:setsockname("*", 1234)
-udp:settimeout(0)
+udp:settimeout(1)
+
+local CMD_INIT			= 0
+local CMD_SQR 			= 1
+local CMD_SEND			= 2
+local CMD_SEND_UPDATE	= 3
 
 function color_wheel(WheelPos)
 	WheelPos = WheelPos % 255
@@ -29,25 +34,39 @@ local init = false
 while true do
 	data, ip, port = udp:receivefrom()
 	if data then
-		print("Received: ",ip,port)
 		local _, cmd = upack(data, "b")
-		if cmd == 65 then
+		print("Received: ",ip,port, cmd, #data)
+		if cmd == CMD_INIT then
 			matrix:decode_and_init(data)
 			init = true
-		elseif cmd == 66 and init then
+		elseif cmd == CMD_SQR and init then
 			local _, cmd, px, py, ox, oy = upack(data, "bIIII")
 			local data = data:sub(18)
-			print("Pixel ",_, cmd, px, py, ox, oy)
-			for x=ox,px-1+ox do
-				for y=oy,py-1+oy do
+			-- print("Pixel ",_, cmd, px, py, ox, oy)
+			for y=oy,py-1+oy do
+				for x=ox,px-1+ox do
 					local _,r,g,b = upack(data, "bbb")
 					data = data:sub(4)
-					print(r,g,b)
-					matrix:setPixel(x, y, {r,g,b})
+					if r then
+						matrix:setPixel(x, y, {r,g,b})
+					end
 				end
 			end
 			matrix:send()
+		elseif (cmd == CMD_SEND or cmd == CMD_SEND_UPDATE) and init then
+			local _, cmd, off, len = upack(data, "bII")
+			data = data:sub(10)
+			for i=0,len-1 do
+				local _,r,g,b = upack(data, "bbb")
+				data = data:sub(4)
+				if r then
+					matrix:setPixel((off+i)%matrix.lx, (off+i)/matrix.lx, {r,g,b})
+				end
+			end
+			if cmd == CMD_SEND_UPDATE then
+				matrix:send()
+			end
 		end
 	end
-	socket.sleep(0.1)
+	-- socket.sleep(0.001)
 end

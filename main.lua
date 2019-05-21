@@ -7,8 +7,8 @@ local pack = string.pack
 local upack = string.unpack
 
 udp = socket.udp()
-udp:setsockname("*", 1234)
-udp:settimeout(1)
+udp:setsockname("*", 12345)
+-- udp:settimeout(1)
 
 local CMD_INIT			= 0
 local CMD_SQR 			= 1
@@ -35,7 +35,7 @@ while true do
 	data, ip, port = udp:receivefrom()
 	if data then
 		local _, cmd = upack(data, "b")
-		print("Received: ",ip,port, cmd, #data)
+		-- print("Received: ",ip,port, cmd, #data)
 		if cmd == CMD_INIT then
 			matrix:decode_and_init(data)
 			init = true
@@ -60,7 +60,8 @@ while true do
 				local _,r,g,b = upack(data, "bbb")
 				data = data:sub(4)
 				if r then
-					matrix:setPixel((off+i)%matrix.lx, (off+i)/matrix.lx, {r,g,b})
+					--matrix:setPixel((off+i)%matrix.lx, (off+i)/matrix.lx, {r,g,b})
+					matrix:set_color((off+i)%matrix.lx, (off+i)/matrix.lx, r,g,b)
 				end
 			end
 			if cmd == CMD_SEND_UPDATE then
@@ -68,5 +69,5 @@ while true do
 			end
 		end
 	end
-	-- socket.sleep(0.001)
+	-- socket.sleep(0.0001)
 end

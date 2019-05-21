@@ -84,6 +84,11 @@ function matrix:setPixel(x,y,c)
 	lib.led_canvas_set_pixel(self.canvas, x, y, c[1], c[2], c[3]);
 end
 
+function matrix:set_color(x,y,r,g,b)
+	lib.led_canvas_set_pixel(self.canvas, x, y, r, g, b);
+end
+
+
 
 function matrix:send()
 	self.canvas = lib.led_matrix_swap_on_vsync(self.matrix, self.canvas);

@@ -1,5 +1,9 @@
+local ffi = require("ffi")
+local lib = ffi.load("lib/librgbmatrix.so.1")
 
-local lib = ffi.load("/home/pi/matrix-luajit/librgbmatrix.so.1")
+local lpack = require("pack")
+local pack = string.pack
+local upack = string.unpack
 
 ffi.cdef([[
 struct RGBLedMatrix {};
@@ -62,9 +66,13 @@ function matrix:init(option)
 	-- self.matrix  = ffi.new("struct RGBLedMatrix")
 	self.canvas  = ffi.new("struct LedCanvas")
 
-	for k,v in pairs(option) do options[k] = v end
+	print("Init:")
+	for k,v in pairs(option) do
+		print(" ",k,v)
+		self.options[k] = v
+	end
 
-	local self.matrix = ffi.gc(lib.led_matrix_create_from_options(options, nil, nil), lib.led_matrix_delete)
+	self.matrix = ffi.gc(lib.led_matrix_create_from_options(self.options, nil, nil), lib.led_matrix_delete)
 	self.canvas = lib.led_matrix_create_offscreen_canvas(self.matrix)
 end
 
@@ -75,6 +83,31 @@ end
 
 function matrix:send()
 	self.canvas = lib.led_matrix_swap_on_vsync(self.matrix, self.canvas);
+end
+
+
+function matrix:decode_and_init(data)
+	local option = {}
+	local nb, type, flags
+
+	_,
+	type,
+	option.hardware_mapping,
+	option.rows,
+	option.cols,
+	option.chain_length,
+	option.parallel,
+	option.pwm_bits,
+	option.pwm_lsb_nanoseconds,
+	option.pwm_dither_bits,
+	option.brightness,
+	option.scan_mode,
+	option.row_address_type,
+	option.multiplexing,
+	option.led_rgb_sequence,
+	option.pixel_mapper_config,
+	flags = upack(data,"bzIIIIIIIIIIIzzb")
+	self:init(option)
 end
 
 return matrix

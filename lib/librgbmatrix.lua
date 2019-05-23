@@ -6,6 +6,13 @@ local pack = string.pack
 local upack = string.unpack
 
 ffi.cdef([[
+
+typdef struct {
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+} color;
+
 struct RGBLedMatrix {};
 struct LedCanvas {};
 struct LedFont {};

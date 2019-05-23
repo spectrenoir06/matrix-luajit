@@ -56,13 +56,16 @@ while true do
 		elseif (cmd == CMD_SEND or cmd == CMD_SEND_UPDATE) and init then
 			local _, cmd, off, len = upack(data, "bII")
 			data = data:sub(10)
+			local prev = 1
+			local r,g,b = 0,0,0
+			local lx = matrix.lx
 			for i=0,len-1 do
-				local _,r,g,b = upack(data, "bbb")
-				data = data:sub(4)
-				if r then
+				prev,r,g,b = upack(data, "bbb", prev)
+				-- data = data:sub(4)
+				-- if r then
 					--matrix:setPixel((off+i)%matrix.lx, (off+i)/matrix.lx, {r,g,b})
-					matrix:set_color((off+i)%matrix.lx, (off+i)/matrix.lx, r,g,b)
-				end
+					matrix:set_color((off+i)%lx, (off+i)/lx, r,g,b)
+				-- end
 			end
 			if cmd == CMD_SEND_UPDATE then
 				matrix:send()

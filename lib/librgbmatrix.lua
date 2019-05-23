@@ -7,7 +7,7 @@ local upack = string.unpack
 
 ffi.cdef([[
 
-typdef struct {
+typedef struct {
 	unsigned char r;
 	unsigned char g;
 	unsigned char b;

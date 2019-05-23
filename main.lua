@@ -1,6 +1,6 @@
 local ffi = require("ffi")
 local socket = require("socket")
-local matrix = require("lib.matrix")
+local matrix = require("lib.rgbmatrix")
 
 local lpack = require("pack")
 local pack = string.pack

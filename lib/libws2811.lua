@@ -1,6 +1,9 @@
 local ffi = require("ffi")
 local lib = ffi.load("lib/libws2811.so")
 
+local bor    = bits.bor
+local rshift = bits.rshift
+
 ffi.cdef(
 [[
 
@@ -120,15 +123,19 @@ function matrix:init(x,y)
 	lib.ws2811_init(self.strip)
 end
 
-function matrix:setPixel(x,y, c)
+function matrix:setPixel(x,y,c)
 	ledstring.channel[0].leds[self.lx+self.ly] = c -- ws2811_led_t  0xWWRRGGBB
+end
+
+function matrix:set_color(x,y,r,g,b)
+	ledstring.channel[0].leds[self.lx+self.ly] = bor(r, rshift(g,8), rshift(b,16))
 end
 
 function matrix:render()
 	lib.ws2811_render(self.strip)
 end
 
-function matrix:fini()
+function matrix:send()
 	lib.ws2811_fini(self.strip)
 end
 

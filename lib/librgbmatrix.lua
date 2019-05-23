@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local lib = ffi.load("lib/librgbmatrix.so.1")
+local lib = ffi.load("lib/librgbmatrix.so")
 
 local lpack = require("pack")
 local pack = string.pack
@@ -70,7 +70,6 @@ local matrix = {}
 
 function matrix:init(option)
 	self.options = ffi.new("struct RGBLedMatrixOptions")
-	-- self.matrix  = ffi.new("struct RGBLedMatrix")
 	self.canvas  = ffi.new("struct LedCanvas")
 
 	print("Init:")

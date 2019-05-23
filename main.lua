@@ -8,7 +8,7 @@ local upack = string.unpack
 
 udp = socket.udp()
 udp:setsockname("*", 12345)
--- udp:settimeout(1)
+udp:settimeout(1)
 
 local CMD_INIT			= 0
 local CMD_SQR 			= 1

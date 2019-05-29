@@ -41,14 +41,15 @@ while true do
 			init = true
 		elseif cmd == CMD_SQR and init then
 			local _, cmd, px, py, ox, oy = upack(data, "bIIII")
+			local prev = 1
+			local r,g,b = 0,0,0
 			local data = data:sub(18)
 			-- print("Pixel ",_, cmd, px, py, ox, oy)
 			for y=oy,py-1+oy do
 				for x=ox,px-1+ox do
-					local _,r,g,b = upack(data, "bbb")
-					data = data:sub(4)
+					prev,r,g,b = upack(data, "bbb", prev)
 					if r then
-						matrix:setPixel(x, y, {r,g,b})
+						matrix:set_color(x,y,r,g,b)
 					end
 				end
 			end

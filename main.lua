@@ -1,6 +1,7 @@
 local ffi = require("ffi")
 local socket = require("socket")
 local matrix = require("lib.librgbmatrix")
+local matrix2 = require("lib.libws2811")
 
 local lpack = require("pack")
 local pack = string.pack
@@ -30,6 +31,19 @@ function color_wheel(WheelPos)
 end
 
 local init = false
+
+matrix2:init(9,1)
+
+local i = 0
+while true do
+	local c = color_wheel(i)
+	i = i + 1
+	-- print(c[1])
+	matrix2:setPixel(0,0,c)
+	matrix2:render()
+	socket.sleep(0.001)
+end
+
 
 while true do
 	data, ip, port = udp:receivefrom()

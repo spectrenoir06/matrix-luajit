@@ -1,8 +1,8 @@
 local ffi = require("ffi")
 local lib = ffi.load("lib/libws2811.so")
 
-local bor    = bits.bor
-local rshift = bits.rshift
+local bor    = bit.bor
+local lshift = bit.lshift
 
 ffi.cdef(
 [[
@@ -109,7 +109,7 @@ function matrix:init(x,y)
 	self.strip.freq = WS2811_TARGET_FREQ
 	self.strip.dmanum = 10
 
-	self.strip.channel[0].gpionum = 18
+	self.strip.channel[0].gpionum = 21
 	self.strip.channel[0].count = x*y
 	self.strip.channel[0].invert = 0
 	self.strip.channel[0].brightness = 255
@@ -124,11 +124,11 @@ function matrix:init(x,y)
 end
 
 function matrix:setPixel(x,y,c)
-	ledstring.channel[0].leds[self.lx+self.ly] = c -- ws2811_led_t  0xWWRRGGBB
+	self.strip.channel[0].leds[x+y*self.ly] = bor(c[1], lshift(c[2],8), lshift(c[3],16)) -- ws2811_led_t  0xWWRRGGBB
 end
 
-function matrix:set_color(x,y,r,g,b)
-	ledstring.channel[0].leds[self.lx+self.ly] = bor(r, rshift(g,8), rshift(b,16))
+function matrix:setRGB(x,y,r,g,b)
+	self.strip.channel[0].leds[x+y*self.ly] = bor(r, lshift(g,8), lshift(b,16))
 end
 
 function matrix:render()

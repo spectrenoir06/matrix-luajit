@@ -49,7 +49,7 @@ while true do
 				for x=ox,px-1+ox do
 					prev,r,g,b = upack(data, "bbb", prev)
 					if r then
-						matrix:set_color(x,y,r,g,b)
+						matrix:setRGB(x,y,r,g,b)
 					end
 				end
 			end
@@ -65,7 +65,7 @@ while true do
 				-- data = data:sub(4)
 				-- if r then
 					--matrix:setPixel((off+i)%matrix.lx, (off+i)/matrix.lx, {r,g,b})
-					matrix:set_color((off+i)%lx, (off+i)/lx, r,g,b)
+					matrix:setRGB((off+i)%lx, (off+i)/lx, r,g,b)
 				-- end
 			end
 			if cmd == CMD_SEND_UPDATE then

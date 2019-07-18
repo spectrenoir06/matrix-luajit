@@ -135,7 +135,7 @@ function matrix:render()
 	lib.ws2811_render(self.strip)
 end
 
-function matrix:send()
+function matrix:stop()
 	lib.ws2811_fini(self.strip)
 end
 

@@ -85,13 +85,8 @@ function Matrix:setPixel(x,y,c)
 	lib.led_canvas_set_pixel(self.canvas, x, y, c[1], c[2], c[3])
 end
 
-<<<<<<< HEAD
 function Matrix:setRGB(x,y,r,g,b)
 	lib.led_canvas_set_pixel(self.canvas, x, y, r, g, b)
-=======
-function matrix:setRGB(x,y,r,g,b)
-	lib.led_canvas_set_pixel(self.canvas, x, y, r, g, b);
->>>>>>> 4f7b4bdd84aa31329b90b09d7ff41a4465ad5e85
 end
 
 function Matrix:send()

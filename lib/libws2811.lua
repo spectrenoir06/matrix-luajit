@@ -125,7 +125,7 @@ function MatrixWS2811:initialize(x,y)
 end
 
 function MatrixWS2811:zigzag(x,y)
-	if y%2 ~= 0 then
+	if y%2 == 0 then
 		x = 15-x
 	end
 	return(x+y*16)
@@ -156,9 +156,9 @@ function MatrixWS2811:setPixel(x,y,c)
 end
 
 function MatrixWS2811:setRGB(x,y,r,g,b)
-	-- local pos = self:getRealPos(x,y)
+	local pos = self:getRealPos(x,y)
 	if x+y*self.lx < self.strip.channel[0].count then
-		self.strip.channel[0].leds[x+y*16] = bor(r, lshift(g,8), lshift(b,16))
+		self.strip.channel[0].leds[pos] = bor(r, lshift(g,8), lshift(b,16))
 	end
 end
 

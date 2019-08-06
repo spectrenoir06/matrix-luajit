@@ -113,7 +113,7 @@ function MatrixWS2811:initialize(x,y)
 	self.strip.channel[0].gpionum = 21
 	self.strip.channel[0].count = x*y
 	self.strip.channel[0].invert = 0
-	self.strip.channel[0].brightness = 255
+	self.strip.channel[0].brightness = 15
 	self.strip.channel[0].strip_type = WS2811_STRIP_GBR
 
 	self.strip.channel[1].gpionum = 0
@@ -157,8 +157,9 @@ end
 
 function MatrixWS2811:setRGB(x,y,r,g,b)
 	-- local pos = self:getRealPos(x,y)
-	print(x,y,g)
-	self.strip.channel[0].leds[x+y*16] = bor(r, lshift(g,8), lshift(b,16))
+	if x+y*self.lx < self.strip.channel[0].count then
+		self.strip.channel[0].leds[x+y*16] = bor(r, lshift(g,8), lshift(b,16))
+	end
 end
 
 function MatrixWS2811:clear()

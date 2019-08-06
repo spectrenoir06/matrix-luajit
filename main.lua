@@ -36,28 +36,28 @@ local init = false
 
 matrix = MatrixWS2811:new(16,16)
 
-local i = 0
-while i<5000 do
-	for y=0,15 do
-		for x=0,15 do
-			-- if y%2 == 0 then
-				local c = color_wheel(i+x+y)
-				matrix:setPixel(x,y,c)
-			-- else
-				-- local c = color_wheel(i+128)
-				-- local c = 0
-				-- matrix:clear()
-				-- matrix:setPixel(x,y,c)
-			-- end
-
-		end
-	end
-	matrix:render()
-	socket.sleep(0.001)
-	i = i + 1
-end
-matrix:clear()
-matrix:render()
+-- local i = 0
+-- while i<5000 do
+-- 	for y=0,15 do
+-- 		for x=0,15 do
+-- 			-- if y%2 == 0 then
+-- 				local c = color_wheel(i+x+y)
+-- 				matrix:setPixel(x,y,c)
+-- 			-- else
+-- 				-- local c = color_wheel(i+128)
+-- 				-- local c = 0
+-- 				-- matrix:clear()
+-- 				-- matrix:setPixel(x,y,c)
+-- 			-- end
+--
+-- 		end
+-- 	end
+-- 	matrix:render()
+-- 	socket.sleep(0.001)
+-- 	i = i + 1
+-- end
+-- matrix:clear()
+-- matrix:render()
 
 local matrix
 
@@ -89,16 +89,18 @@ while true do
 			matrix:send()
 		elseif (cmd == CMD_SEND or cmd == CMD_SEND_UPDATE) and init then
 			local _, cmd, off, len = upack(data, "bII")
+			print("Hello",cmd,off,len)
 			data = data:sub(10)
 			local prev = 1
 			local r,g,b = 0,0,0
 			local lx = matrix.lx
 			for i=0,len-1 do
 				prev,r,g,b = upack(data, "bbb", prev)
+				-- print(r,g,b)
 				-- data = data:sub(4)
 				-- if r then
-					--matrix:setPixel((off+i)%matrix.lx, (off+i)/matrix.lx, {r,g,b})
-					matrix:setRGB((off+i)%lx, (off+i)/lx, r,g,b)
+					-- matrix:setPixel((off+i)%matrix.lx, (off+i)/matrix.lx, {r,g,b})
+					matrix:setRGB((off+i)%lx, math.floor((off+i)/lx), r, g, b)
 				-- end
 			end
 			if cmd == CMD_SEND_UPDATE then

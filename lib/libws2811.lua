@@ -1,8 +1,9 @@
 local ffi = require("ffi")
 local lib = ffi.load("lib/libws2811.so")
+local class = require("lib/middleclass")
 
-local bor    = bits.bor
-local rshift = bits.rshift
+local bor    = bit.bor
+local lshift = bit.lshift
 
 ffi.cdef(
 [[
@@ -97,9 +98,9 @@ local WS2812_STRIP  = WS2811_STRIP_GRB
 local SK6812_STRIP  = WS2811_STRIP_GRB
 local SK6812W_STRIP = SK6812_STRIP_GRBW
 
-local matrix = {}
+local MatrixWS2811 = class("MatrixWS2811")
 
-function matrix:init(x,y)
+function MatrixWS2811:initialize(x,y)
 
 	self.lx = x
 	self.ly = y
@@ -109,7 +110,7 @@ function matrix:init(x,y)
 	self.strip.freq = WS2811_TARGET_FREQ
 	self.strip.dmanum = 10
 
-	self.strip.channel[0].gpionum = 18
+	self.strip.channel[0].gpionum = 21
 	self.strip.channel[0].count = x*y
 	self.strip.channel[0].invert = 0
 	self.strip.channel[0].brightness = 255
@@ -123,20 +124,55 @@ function matrix:init(x,y)
 	lib.ws2811_init(self.strip)
 end
 
-function matrix:setPixel(x,y,c)
-	ledstring.channel[0].leds[self.lx+self.ly] = c -- ws2811_led_t  0xWWRRGGBB
+function MatrixWS2811:zigzag(x,y)
+	if y%2 ~= 0 then
+		x = 15-x
+	end
+	return(x+y*16)
 end
 
-function matrix:set_color(x,y,r,g,b)
-	ledstring.channel[0].leds[self.lx+self.ly] = bor(r, rshift(g,8), rshift(b,16))
+function MatrixWS2811:getMatrix(x,y)
+	return math.floor(x/16), math.floor(y/16)
 end
 
-function matrix:render()
+function MatrixWS2811:getRealPos(x,y)
+	local mx, my = self:getMatrix(x,y)
+	x = x - mx * 16
+	y = y - my * 16
+	if mx == 0 and my == 0 then
+		return self:zigzag(x,y)
+	elseif mx == 0 and my == 1 then
+		return self:zigzag(x,y) + 16*16
+	elseif mx == 1 and my == 1 then
+		return self:zigzag(x,y) + 16*16*2
+	elseif mx == 1 and my == 0 then
+		return self:zigzag(x,y) + 16*16*3
+	end
+end
+
+function MatrixWS2811:setPixel(x,y,c)
+	local pos = self:getRealPos(x,y)
+	self.strip.channel[0].leds[pos] = bor(c[1], lshift(c[2],8), lshift(c[3],16)) -- ws2811_led_t  0xWWRRGGBB
+end
+
+function MatrixWS2811:setRGB(x,y,r,g,b)
+	-- local pos = self:getRealPos(x,y)
+	print(x,y,g)
+	self.strip.channel[0].leds[x+y*16] = bor(r, lshift(g,8), lshift(b,16))
+end
+
+function MatrixWS2811:clear()
+	for i=0, self.strip.channel[0].count-1 do
+		self.strip.channel[0].leds[i] = 0 -- ws2811_led_t  0xWWRRGGBB
+	end
+end
+
+function MatrixWS2811:render()
 	lib.ws2811_render(self.strip)
 end
 
-function matrix:send()
+function MatrixWS2811:stop()
 	lib.ws2811_fini(self.strip)
 end
 
-return matrix
+return MatrixWS2811

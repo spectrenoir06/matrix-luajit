@@ -1,5 +1,6 @@
 local ffi = require("ffi")
 local lib = ffi.load("lib/librgbmatrix.so")
+local class = require("lib/middleclass")
 
 local lpack = require("pack")
 local pack = string.pack
@@ -66,45 +67,43 @@ void draw_circle(struct LedCanvas *c, int xx, int y, int radius, uint8_t r, uint
 void draw_line(struct LedCanvas *c, int x0, int y0, int x1, int y1, uint8_t r, uint8_t g, uint8_t b);
 ]])
 
-local matrix = {}
+local Matrix = class("Matrix")
 
-function matrix:init(option)
+function Matrix:initialize(data)
 	self.options = ffi.new("struct RGBLedMatrixOptions")
 	self.canvas  = ffi.new("struct LedCanvas")
-
-	print("Init:")
-	for k,v in pairs(option) do
-		print(" ",k,v)
-		self.options[k] = v
-	end
+	self.options = self:decode(data)
 
 	self.lx = self.options.cols
 	self.ly = self.options.rows
 
-	-- print(self.lx, self.ly)
 	self.matrix = ffi.gc(lib.led_matrix_create_from_options(self.options, nil, nil), lib.led_matrix_delete)
 	self.canvas = lib.led_matrix_create_offscreen_canvas(self.matrix)
 end
 
-function matrix:setPixel(x,y,c)
-	lib.led_canvas_set_pixel(self.canvas, x, y, c[1], c[2], c[3]);
+function Matrix:setPixel(x,y,c)
+	lib.led_canvas_set_pixel(self.canvas, x, y, c[1], c[2], c[3])
 end
 
-function matrix:set_color(x,y,r,g,b)
-	lib.led_canvas_set_pixel(self.canvas, x, y, r, g, b);
+function Matrix:setRGB(x,y,r,g,b)
+	lib.led_canvas_set_pixel(self.canvas, x, y, r, g, b)
 end
 
-
-
-function matrix:send()
-	self.canvas = lib.led_matrix_swap_on_vsync(self.matrix, self.canvas);
+function Matrix:send()
+	self.canvas = lib.led_matrix_swap_on_vsync(self.matrix, self.canvas)
 end
 
+function Matrix:clear()
+	for x=0, self.lx-1 do
+		for y=0, self.ly-1 do
+			lib.led_canvas_set_pixel(self.canvas, x, y, 0, 0, 0)
+		end
+	end
+end
 
-function matrix:decode_and_init(data)
+function Matrix:decode(data)
 	local option = {}
 	local nb, type, flags
-
 	_,
 	type,
 	option.hardware_mapping,
@@ -122,7 +121,7 @@ function matrix:decode_and_init(data)
 	option.led_rgb_sequence,
 	option.pixel_mapper_config,
 	flags = upack(data,"bzIIIIIIIIIIIzzb")
-	self:init(option)
+	return option
 end
 
-return matrix
+return Matrix
